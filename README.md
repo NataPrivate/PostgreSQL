@@ -1,7 +1,7 @@
 # Usage of PostgreSQL and PreparedStatement
 ## MTP Lab9
 
-List of tables: 
+**List of tables:**
 - User
 - Contributor
 - RepositoryOwner
@@ -9,7 +9,7 @@ List of tables:
 - Language
 - Repository_Contributor (Link table)
 
-List of select queries:
+**List of select queries:**
 - Owners of projects written in certain language or unnamed
 - Contributors to more than 1 repo
 - Contributors with more than N total commits
@@ -19,7 +19,7 @@ List of select queries:
 ### Results on 07.12.2017
 *The selection was made for 2 months old repos. 35 most starred and 35 most commited. Each with top 40 contributers.*
 
------Owners Of Java Projects or unnamed:-----
+**-----Owners Of Java Projects or unnamed:-----**
 * thedaviddias with id: 237229
 * vitalysim with id: 7724350
 * RedditSota with id: 33503115
@@ -30,7 +30,7 @@ List of select queries:
 * kristate with id: 44620
 * karlhorky with id: 1935696
 
------Contributors to more than 1 repo:-----
+**-----Contributors to more than 1 repo:-----**
 * WittBulter with id: 11304944
 * cdubz with id: 10456740
 * thedaviddias with id: 237229
@@ -38,7 +38,7 @@ List of select queries:
 * xxhomey19 with id: 1211322 
 * clickthisnick with id: 7855189
 
------Contributors with more than 1300 total commits:-----
+**-----Contributors with more than 1300 total commits:-----**
 * jmalinen with id: 5983923
 * antirez with id: 65632
 * juhosg with id: 19352056
@@ -50,7 +50,7 @@ List of select queries:
 * hauke with id: 78494
 * kaloz with id: 7490166
 
------Repos with 'tool' in description-----
+**-----Repos with 'tool' in description-----**
 * owner: airbnb  
 name: Lona  
 description: A tool for defining design systems and using them to generate cross-platform UI code, Sketch files, images, and other artifacts.  
