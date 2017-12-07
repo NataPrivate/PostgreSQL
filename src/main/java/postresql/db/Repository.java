@@ -42,15 +42,12 @@ public class Repository implements Serializable {
                 fieldValue = field.get(this);
                 if (fieldValue != null) {
                     if (fieldValue instanceof String || (fieldValue instanceof Integer && (Integer) fieldValue != 0))
-                        repo.append("\n")
-                                .append(fieldName)
+                        repo.append("\n").append(fieldName)
                                 .append(": ").append(fieldValue);
                     else if (fieldValue instanceof Language)
-                        repo.append("\n")
-                                .append("language: ")
+                        repo.append("\n").append("language: ")
                                 .append(((Language) fieldValue).getName());
                 }
-
             }
         }
         catch (IllegalAccessException e) {
