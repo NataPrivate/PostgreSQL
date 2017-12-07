@@ -186,34 +186,133 @@ public class PostgreSQLHandler {
         preparedStatement.setLong(1, link.getRepositoryId());
         preparedStatement.setLong(2, link.getContributorId());
         preparedStatement.setInt(3, link.getCommits_count());
-        preparedStatement.executeUpdate();}
+        preparedStatement.executeUpdate();
+    }
 
-    public void executeQueries() {
-//        SELECT simpleuser.*, contributor.commits_count
-//        FROM repository_contributor, simpleuser, contributor
-//        WHERE repository_contributor.contributor_id = simpleuser.id and repository_contributor.contributor_id = contributor.id
-//        GROUP BY simpleuser.id, simpleuser.login,contributor.commits_count HAVING count(repository_id) > 1;
+    public List<RepositoryOwner> selectOwnersOfProjectInCertainLanguageOrNotSpecified(String language)
+                                    throws  SQLException {
+        List<RepositoryOwner> owners = new ArrayList<>();
+        String query = "SELECT simpleuser.* " +
+                "FROM repository, simpleuser " +
+                "WHERE simpleuser.id = repository.owner_id and (language = ? or language = '');";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setString(1, language);
 
+        ResultSet result = preparedStatement.executeQuery();
+        while (result.next())
+            owners.add(new RepositoryOwner(result.getLong(1), result.getString(2)));
+
+        return owners;
 //        SELECT simpleuser.*
-//        FROM repository, simpleuser where simpleuser.id = repository.owner_id and (language = 'Java' or language = '');
+//        FROM repository, simpleuser
+//        WHERE simpleuser.id = repository.owner_id and (language = 'Java' or language = '');
 
-//        SELECT * FROM (
-//                SELECT DISTINCT ON (language) language, count(id)
-//                FROM repository GROUP BY language ORDER BY language DESC
-//        ) r
-//        ORDER BY count DESC;
+    }
+    public List<User> selectContributorsToManyRepositories() throws SQLException {
+        List<User> users = new ArrayList<>();
+        Statement stmt = connection.createStatement();
+        StringBuilder query = new StringBuilder("SELECT simpleuser.* ")
+                .append("FROM repository_contributor, simpleuser ")
+                .append("WHERE repository_contributor.contributor_id = simpleuser.id ")
+                .append("GROUP BY simpleuser.id, simpleuser.login HAVING count(repository_id) > 1;");
 
+        ResultSet result = stmt.executeQuery(query.toString());
+        while (result.next())
+            users.add(new User(result.getLong(1), result.getString(2)));
+
+        return users;
+//        SELECT simpleuser.*
+//        FROM repository_contributor, simpleuser
+//        WHERE repository_contributor.contributor_id = simpleuser.id
+//        GROUP BY simpleuser.id, simpleuser.login HAVING count(repository_id) > 1;
+    }
+    public List<User> selectContributorsWithCertainMinimumOfCommits(int commits_count) throws SQLException {
+        List<User> users = new ArrayList<>();
+        String query = "SELECT id, login FROM ( " +
+                            "SELECT DISTINCT ON(contributor_id) simpleuser.*, sum(commits_count) " +
+                            "FROM repository_contributor, simpleuser " +
+                            "WHERE repository_contributor.contributor_id = simpleuser.id " +
+                            "GROUP BY repository_contributor.contributor_id, simpleuser.id, simpleuser.login, commits_count " +
+                            "ORDER BY contributor_id DESC) c " +
+                        "GROUP BY id, login, sum  HAVING sum > ? ORDER BY sum DESC;";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setInt(1, commits_count);
+
+        ResultSet result = preparedStatement.executeQuery();
+        while (result.next())
+            users.add(new RepositoryOwner(result.getLong(1), result.getString(2)));
+
+        return users;
+//        SELECT id, login FROM (
+//                SELECT DISTINCT ON(contributor_id) simpleuser.*, sum(commits_count)
+//                FROM repository_contributor, simpleuser
+//                WHERE repository_contributor.contributor_id = simpleuser.id
+//                GROUP BY repository_contributor.contributor_id, simpleuser.id, simpleuser.login, commits_count
+//                ORDER BY contributor_id DESC
+//        ) c
+//        GROUP BY id, login, sum  HAVING sum > 1300 ORDER BY sum DESC;
+    }
+    public List<Repository> selectRepositoriesByDescriptionPart(String descriptionPart) throws SQLException {
+        List<Repository> repos = new ArrayList<>();
+        String query = "SELECT repository.id, simpleuser.id, simpleuser.login, repository.name, " +
+                "repository.description, repository.language, repository.stars_count, repository.commits_count " +
+                "FROM repository, simpleuser " +
+                "WHERE repository.owner_id = simpleuser.id and description LIKE ?;";
+        PreparedStatement preparedStatement = connection.prepareStatement(query);
+        preparedStatement.setString(1, "%" + descriptionPart + "%");
+
+        ResultSet result = preparedStatement.executeQuery();
+        while (result.next())
+            repos.add(makeUpRepo(result));
+
+        return repos;
+//        SELECT repository.id, simpleuser.id, simpleuser.login, repository.name, repository.description, repository.language, repository.stars_count, repository.commits_count
+//        FROM repository, simpleuser
+//        WHERE repository.owner_id = simpleuser.id and description LIKE '%tool%';
+    }
+
+    private Repository makeUpRepo(ResultSet result) throws SQLException {
+        RepositoryOwner owner = new RepositoryOwner(result.getLong(2),result.getString(3));
+        Language language = new Language(result.getString(6));
+        Repository repo = new Repository(result.getLong(1), owner, result.getString(4),
+                result.getString(5), language);
+        int starsCount = result.getInt(7);
+        int commitCount = result.getInt(8);
+        if (starsCount != 0)
+            repo.setStarsCount(starsCount);
+        if (commitCount != 0)
+            repo.setCommitsCount(commitCount);
+
+        return repo;
+    }
+
+    public Language selectMostPopularLanguage() throws  SQLException {
+        Language mostPopularLanguage = null;
+        Statement stmt = connection.createStatement();
+        StringBuilder query = new StringBuilder("SELECT language FROM ( ")
+                    .append("SELECT DISTINCT ON (language) language, count(id) ")
+                    .append("FROM repository GROUP BY language ORDER BY language DESC) r ")
+                .append("WHERE count = ( ")
+                    .append("SELECT MAX(count) FROM ( ")
+                        .append("SELECT DISTINCT ON (language) language, count(id) ")
+                        .append("FROM repository GROUP BY language ORDER BY language DESC) r ")
+                .append(");");
+
+        ResultSet result = stmt.executeQuery(query.toString());
+        while (result.next())
+            mostPopularLanguage = new Language(result.getString(1));
+
+        return mostPopularLanguage;
 //        SELECT language FROM (
 //                SELECT DISTINCT ON (language) language, count(id)
 //                FROM repository GROUP BY language ORDER BY language DESC
-//        ) r
+//                ) r
 //        WHERE count = (
 //                SELECT MAX(count) FROM (
-//                SELECT DISTINCT ON (language) language, count(id)
-//                FROM repository GROUP BY language ORDER BY language DESC
-//        ) r
+    //                SELECT DISTINCT ON (language) language, count(id)
+    //                FROM repository GROUP BY language ORDER BY language DESC
+    //                ) r
 //            );
-
     }
 
     public void close() {

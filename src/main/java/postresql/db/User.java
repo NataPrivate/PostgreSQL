@@ -16,9 +16,7 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder contributor = new StringBuilder();
-        contributor.append("\n")
-                    .append(login)
+        StringBuilder contributor = new StringBuilder(login)
                     .append(" with id: ")
                     .append(id);
         return contributor.toString();

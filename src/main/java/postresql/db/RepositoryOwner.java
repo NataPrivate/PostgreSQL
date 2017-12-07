@@ -11,11 +11,4 @@ public class RepositoryOwner extends User implements Serializable {
         this.id = id;
         this.login = login;
     }
-
-    @Override
-    public String toString() {
-        StringBuilder contributor = new StringBuilder();
-        contributor.append("\n").append(getLogin());
-        return contributor.toString();
-    }
 }
