@@ -9,4 +9,5 @@ import lombok.Getter;
 public class Repository_Contributor {
     private long repositoryId;
     private long contributorId;
+    int commits_count;
 }

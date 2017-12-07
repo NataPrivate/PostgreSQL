@@ -47,12 +47,11 @@ public class PostgreSQLHandler {
         createTable("simpleuser", parameters.toString());
 
         parameters = new StringBuilder();
-        parameters.append("id SERIAL NOT NULL PRIMARY KEY REFERENCES simple_user(id), ")
-                    .append("commits_count INT NOT NULL");
+        parameters.append("id SERIAL NOT NULL PRIMARY KEY REFERENCES simpleuser(id)");
         createTable("contributor", parameters.toString());
 
         parameters = new StringBuilder();
-        parameters.append("id SERIAL NOT NULL PRIMARY KEY REFERENCES simple_user(id)");
+        parameters.append("id SERIAL NOT NULL PRIMARY KEY REFERENCES simpleuser(id)");
         createTable("repositoryowner", parameters.toString());
 
         parameters = new StringBuilder();
@@ -66,9 +65,10 @@ public class PostgreSQLHandler {
         createTable("repository", parameters.toString());
 
         parameters = new StringBuilder();
-        parameters.append("repository_id INT NOT NULL REFERENCES repository(id) PRIMARY KEY, ")
-                    .append("contributor_id INT NOT NULL REFERENCES contributor(id) PRIMARY KEY, ")
-                    .append("commits_count INT NOT NULL");
+        parameters.append("repository_id INT NOT NULL REFERENCES repository(id), ")
+                    .append("contributor_id INT NOT NULL REFERENCES contributor(id), ")
+                    .append("commits_count INT NOT NULL, ")
+                    .append("PRIMARY KEY (repository_id, contributor_id)");
         createTable("repository_contributor",  parameters.toString());
     }
     private void createTable(String name, String parameters) throws SQLException {
@@ -84,11 +84,12 @@ public class PostgreSQLHandler {
             insertOwner(repo.getOwner());
             insertRepository(repo);
             for (Contributor contributor : repo.getContributors()) {
-                if (contributor != null)
+                if (contributor != null) {
                     insertContributor(contributor);
+                    insertLink(new Repository_Contributor(repo.getId(), contributor.getId(), contributor.getCommitsCount()));
+                }
             }
         }
-        allRepos.forEach(repo -> fillLinkTable(repo));
     }
     private List<Repository> getAllRepos() throws Exception {
         List<Repository> allRepos;
@@ -124,6 +125,7 @@ public class PostgreSQLHandler {
         objOutputStream.close();
         fos.close();
     }
+    @SuppressWarnings("unchecked")
     private List<Repository> deserializeRepos(String path) throws IOException, ClassNotFoundException {
         List<Repository> allRepos;
         FileInputStream fis = new FileInputStream(path);
@@ -133,20 +135,6 @@ public class PostgreSQLHandler {
         fis.close();
 
         return allRepos;
-    }
-
-    private void fillLinkTable(Repository repo) {
-        if (repo.getContributors() == null)
-            return;
-
-        Arrays.asList(repo.getContributors()).forEach(contributor -> {
-            try {
-                if (contributor != null)
-                    insertLink(new Repository_Contributor(repo.getId(), contributor.getId()));
-            } catch (SQLException e) {
-                e.printStackTrace();
-            }
-        });
     }
 
     private void insertLanguage(Language language) throws SQLException {
@@ -179,10 +167,9 @@ public class PostgreSQLHandler {
     private void insertContributor(Contributor contributor) throws SQLException {
         insertUser(new User(contributor.getId(), contributor.getLogin()));
 
-        String query = "INSERT INTO contributor VALUES(?, ?) ON CONFLICT(id) DO NOTHING";
+        String query = "INSERT INTO contributor VALUES(?) ON CONFLICT(id) DO NOTHING";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
         preparedStatement.setLong(1, contributor.getId());
-        preparedStatement.setInt(2, contributor.getCommitsCount());
         preparedStatement.executeUpdate();
     }
     private void insertUser(User user) throws SQLException {
@@ -193,11 +180,12 @@ public class PostgreSQLHandler {
         preparedStatement.executeUpdate();
     }
     private void insertLink(Repository_Contributor link) throws SQLException {
-        String query = "INSERT INTO repository_contributor(repository_id, contributor_id) VALUES(?, ?) "
+        String query = "INSERT INTO repository_contributor(repository_id, contributor_id, commits_count) VALUES(?, ?, ?) "
                         + "ON CONFLICT DO NOTHING";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
         preparedStatement.setLong(1, link.getRepositoryId());
         preparedStatement.setLong(2, link.getContributorId());
+        preparedStatement.setInt(3, link.getCommits_count());
         preparedStatement.executeUpdate();}
 
     public void executeQueries() {
