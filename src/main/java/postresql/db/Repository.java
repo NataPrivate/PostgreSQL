@@ -46,7 +46,10 @@ public class Repository implements Serializable {
                                 .append(": ").append(fieldValue);
                     else if (fieldValue instanceof Language)
                         repo.append("\n").append("language: ")
-                                .append(((Language) fieldValue).getName());
+                                .append((fieldValue).toString());
+                    else if (fieldValue instanceof RepositoryOwner)
+                        repo.append("\n").append("owner: ")
+                                .append(((RepositoryOwner) fieldValue).getLogin());
                 }
             }
         }
