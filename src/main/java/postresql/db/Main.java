@@ -1,7 +1,7 @@
 package postresql.db;
 
-
 import java.sql.SQLException;
+
 
 public class Main {
     private static PostgreSQLHandler handler;
