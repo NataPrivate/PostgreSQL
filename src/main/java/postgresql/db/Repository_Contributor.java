@@ -1,4 +1,4 @@
-package postresql.db;
+package postgresql.db;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

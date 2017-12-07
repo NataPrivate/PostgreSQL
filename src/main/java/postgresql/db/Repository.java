@@ -1,11 +1,10 @@
-package postresql.db;
+package postgresql.db;
 
 import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
-import java.util.List;
 
 
 @Getter
@@ -41,7 +40,7 @@ public class Repository implements Serializable {
                 fieldName = field.getName();
                 fieldValue = field.get(this);
                 if (fieldValue != null) {
-                    if (fieldValue instanceof String || (fieldValue instanceof Integer && (Integer) fieldValue != 0))
+                    if (fieldValue instanceof String || fieldValue instanceof Integer)
                         repo.append("\n").append(fieldName)
                                 .append(": ").append(fieldValue);
                     else if (fieldValue instanceof Language)

@@ -1,4 +1,4 @@
-package postresql.db;
+package postgresql.db;
 
 import java.io.*;
 import java.sql.*;
@@ -99,9 +99,9 @@ public class PostgreSQLHandler {
         else {
             int reposCount = 35;
             allRepos = new ArrayList<>(
-                    Arrays.asList(gitHubHandler.getMostStarredForLast4Weeks(reposCount)));
+                    Arrays.asList(gitHubHandler.getMostStarredForLast8Weeks(reposCount)));
             allRepos.addAll(
-                    Arrays.asList(gitHubHandler.getMostCommitedForLast4Weeks(reposCount)));
+                    Arrays.asList(gitHubHandler.getMostCommitedForLast8Weeks(reposCount)));
 
             int contributorsCount = 40;
             allRepos.forEach(repo -> {

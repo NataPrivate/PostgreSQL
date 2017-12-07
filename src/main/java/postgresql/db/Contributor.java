@@ -1,4 +1,4 @@
-package postresql.db;
+package postgresql.db;
 
 import lombok.Getter;
 
@@ -9,9 +9,6 @@ public class Contributor extends User implements Serializable {
     @Getter
     private int commitsCount;
 
-    public Contributor(User user, int commitsCount) {
-        this(user.id, user.login, commitsCount);
-    }
     public Contributor(long id, String login, int commitsCount) {
         this.id = id;
         this.login = login;

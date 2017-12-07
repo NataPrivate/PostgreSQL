@@ -1,4 +1,4 @@
-package postresql.db;
+package postgresql.db;
 
 import com.google.gson.*;
 
@@ -22,57 +22,60 @@ public class GitHubHandler {
         request.setHeader("Authorization", "token " + TOKEN);
         request.setHeader("Accept", "application/vnd.github.nightshade-preview+json");
         CloseableHttpResponse response = client.execute(request);
-        return EntityUtils.toString(response.getEntity(), "UTF-8");
+        return response.getEntity() == null ? null : EntityUtils.toString(response.getEntity(), "UTF-8");
     }
 
-    public Repository[] getMostStarredForLast4Weeks(int count) throws IOException {
+    public Repository[] getMostStarredForLast8Weeks(int count) throws IOException {
         Repository[] repos = new Repository[count];
         int wantedPageCount = count / maxResultsCountPerPage + 1;
         int pageCount = wantedPageCount > maxPageCount ? maxPageCount : wantedPageCount;
 
         StringBuilder url;
+        JsonObject jsonObject;
+        JsonArray jsonRepos;
+        int index;
         for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
             url = new StringBuilder("https://api.github.com/search/repositories?q=created:%3E")
                     .append(getDate2MonthsEarlier())
                     .append("&sort=stars&order=desc&page=").append(currentPage);
             String jsonResult = getJsonResult(url.toString());
-            JsonObject jsonObject = (JsonObject) new JsonParser().parse(jsonResult);
-            JsonArray jsonRepos = jsonObject.getAsJsonArray("items");
+            if (jsonResult == null)
+                continue;
+            jsonObject = (JsonObject) new JsonParser().parse(jsonResult);
+            jsonRepos = jsonObject.getAsJsonArray("items");
             if (jsonRepos == null || jsonRepos.size() == 0)
                 break;
 
-            int index = (currentPage - 1) * maxResultsCountPerPage;
+            index = (currentPage - 1) * maxResultsCountPerPage;
             for (int j = 0 ; j < jsonRepos.size(); j++, index++) {
                 if (index >= repos.length)
                     break;
 
-                JsonObject currentRepoJson = (JsonObject) jsonRepos.get(j);
-                repos[index] = convertToRepo(currentRepoJson);
-                repos[index].setStarsCount(getStarsCount(currentRepoJson));
+                repos[index] = convertToRepo((JsonObject) jsonRepos.get(j));
             }
         }
 
         return repos;
     }
-    private Repository convertToRepo(JsonObject jsonRepo) {
+    private Repository convertToRepo(JsonObject jsonRepo) throws IOException {
         long id = jsonRepo.get("id").getAsLong();
         RepositoryOwner owner = getRepositoryOwner(jsonRepo.getAsJsonObject("owner"));
         String name = jsonRepo.get("name").getAsString();
         String description = jsonRepo.get("description").isJsonNull() ? "" : jsonRepo.get("description").getAsString();
         Language language = new Language(jsonRepo.get("language").isJsonNull() ? "" : jsonRepo.get("language").getAsString());
-        return new Repository(id, owner, name, description, language);
+        Repository repo = new Repository(id, owner, name, description, language);
+        repo.setStarsCount(jsonRepo.get("stargazers_count").getAsInt());
+        repo.setCommitsCount(getContributorsCommitsCount(repo));
+        return repo;
     }
     private RepositoryOwner getRepositoryOwner(JsonObject jsonOwner) {
         long id = jsonOwner.get("id").getAsLong();
         String login = jsonOwner.get("login").getAsString();
         return new RepositoryOwner(id, login);
     }
-    private int getStarsCount(JsonObject jsonRepo) {
-        return jsonRepo.get("stargazers_count").getAsInt();
-    }
 
-    public Repository[] getMostCommitedForLast4Weeks (int count) throws Exception {
-        List<Repository> allRepos = getAllReposForLast4Weeks();
+    public Repository[] getMostCommitedForLast8Weeks(int count) throws Exception {
+        List<Repository> allRepos = getAllReposForLast8Weeks();
         allRepos.sort(Comparator.comparing(Repository::getCommitsCount).reversed());
 
         Repository[] repos = new Repository[count];
@@ -80,7 +83,7 @@ public class GitHubHandler {
             repos[i] = allRepos.get(i);
         return repos;
     }
-    private List<Repository> getAllReposForLast4Weeks() throws Exception {
+    private List<Repository> getAllReposForLast8Weeks() throws Exception {
         List<Repository> allRepos = new ArrayList<>();
 
         StringBuilder url;
@@ -89,21 +92,22 @@ public class GitHubHandler {
                     .append(getDate2MonthsEarlier())
                     .append("&page=").append(currentPage);
             String jsonResult = getJsonResult(url.toString());
+            if (jsonResult == null)
+                continue;
+
             JsonObject jsonObject = (JsonObject) new JsonParser().parse(jsonResult);
             JsonArray jsonRepos = jsonObject.getAsJsonArray("items");
             if (jsonRepos == null || jsonRepos.size() == 0)
                 break;
 
-            jsonRepos.forEach(repo -> allRepos.add(convertToRepo((JsonObject)repo)));
+            jsonRepos.forEach(repo -> {
+                try {
+                    allRepos.add(convertToRepo((JsonObject) repo));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
         }
-        allRepos.forEach(repo -> {
-            try {
-                repo.setCommitsCount(getContributorsCommitsCount(repo));
-            } catch (IOException e) {
-                e.printStackTrace();
-                System.exit(1);
-            }
-        });
 
         return allRepos;
     }
@@ -111,21 +115,24 @@ public class GitHubHandler {
         final int[] contributionsCommitsCount = {0};
 
         StringBuilder url;
-        for (int currentPage = 1; currentPage < maxPageCount; currentPage++) {
-            url = new StringBuilder("https://api.github.com/repos/")
-                    .append(repo.getOwner().getLogin()).append("/").append(repo.getName())
-                    .append("/contributors")
-                    .append("?page=").append(currentPage);
-            String jsonResult = getJsonResult(url.toString());
+        String jsonResult;
+        JsonArray jsonContributors;
+            for (int currentPage = 1; currentPage < maxPageCount; currentPage++) {
+                url = new StringBuilder("https://api.github.com/repos/")
+                        .append(repo.getOwner().getLogin()).append("/").append(repo.getName())
+                        .append("/contributors")
+                        .append("?page=").append(currentPage);
+                jsonResult = getJsonResult(url.toString());
+                if (jsonResult == null)
+                    return 0;
 
-            JsonArray jsonContributors = (JsonArray) new JsonParser().parse(jsonResult);
-            if (jsonContributors == null || jsonContributors.size() == 0)
-                break;
+                jsonContributors = (JsonArray) new JsonParser().parse(jsonResult);
+                if (jsonContributors == null || jsonContributors.size() == 0)
+                    break;
 
-            jsonContributors.forEach(contributor ->
-                    contributionsCommitsCount[0] += ((JsonObject)contributor).get("contributions").getAsInt());
-        }
-
+                jsonContributors.forEach(contributor ->
+                        contributionsCommitsCount[0] += ((JsonObject) contributor).get("contributions").getAsInt());
+            }
         return contributionsCommitsCount[0];
     }
 
@@ -135,16 +142,21 @@ public class GitHubHandler {
         int pageCount = wantedPageCount > maxPageCount ? maxPageCount : wantedPageCount;
 
         StringBuilder url;
+        String jsonResult;
+        JsonArray jsonContributors;
+        int index;
         for (int currentPage = 1; currentPage <= pageCount; currentPage++) {
             url = new StringBuilder("https://api.github.com/repos/")
                     .append(repo.getOwner().getLogin()).append("/").append(repo.getName())
                     .append("/contributors?page=").append(currentPage);
-            String jsonResult = getJsonResult(url.toString());
-            JsonArray jsonContributors = (JsonArray) new JsonParser().parse(jsonResult);
+            jsonResult = getJsonResult(url.toString());
+            if (jsonResult == null)
+                continue;
+            jsonContributors = (JsonArray) new JsonParser().parse(jsonResult);
             if (jsonContributors == null || jsonContributors.size() == 0)
                 break;
 
-            int index = (currentPage - 1) * maxResultsCountPerPage;
+            index = (currentPage - 1) * maxResultsCountPerPage;
             for (int j = 0 ; j < jsonContributors.size(); j++, index++) {
                 if (index >= contributors.length)
                     break;
