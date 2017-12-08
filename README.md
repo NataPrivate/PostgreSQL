@@ -18,10 +18,10 @@
 
 ### Results on 08.12.2017
 *The selection was made for 2 months old repos. 35 most starred and 35 most commited. Each with top 40 contributers.   
-First execution(search and serialize) took  504877.68912399997 millisec and 4751712 B.  
+First execution(search and serialize) took  504877.68912399997 millisec and 4751712 B  
 Second(deserialize) took 5210.379897 millisec and 3833456 B*
 
-**-----Owners Of Java Projects or unnamed:-----**
+**-----Owners Of Java Projects or unnamed-----**
 * vitalysim with id: 7724350
 * RedditSota with id: 33503115
 * Alibaba-Technology with id: 33146664
@@ -32,14 +32,14 @@ Second(deserialize) took 5210.379897 millisec and 3833456 B*
 * kristate with id: 44620
 * karlhorky with id: 1935696
 
-**-----Contributors to more than 1 repo:-----**
+**-----Contributors to more than 1 repo-----**
 * tmm1 with id: 2567
 * cdubz with id: 10456740
 * thedaviddias with id: 237229
 * xxhomey19 with id: 12113222
 * clickthisnick with id: 7855189
 
-**-----Contributors with more than 1300 total commits:-----**
+**-----Contributors with more than 1300 total commits-----**
 * jmalinen with id: 5983923
 * antirez with id: 65632
 * juhosg with id: 19352056
@@ -88,5 +88,5 @@ language: Vue
 starsCount: 218  
 commitsCount: 354  
 
-**-----The most popular language:-----**
+**-----The most popular language-----**
 * JavaScript
