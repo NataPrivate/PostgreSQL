@@ -1,8 +1,6 @@
 package postgres.db.test;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import static org.junit.Assert.*;
 
@@ -13,16 +11,7 @@ import java.util.List;
 
 
 public class PostgreSQLHandlerTest {
-    private PostgreSQLHandler handler;
-
-    @Before
-    public void init() throws Exception {
-        handler = new PostgreSQLHandler("test");
-    }
-    @After
-    public void finish() {
-        handler.close();
-    }
+    private PostgreSQLHandler handler = new PostgreSQLHandler("test");
 
     @Test
     public void createTables() throws Exception {

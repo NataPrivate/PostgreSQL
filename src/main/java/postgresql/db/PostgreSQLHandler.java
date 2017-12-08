@@ -9,14 +9,20 @@ public class PostgreSQLHandler {
     private GitHubHandler gitHubHandler;
     private Connection connection;
 
-    public PostgreSQLHandler(String DB) throws ClassNotFoundException, SQLException {
-        gitHubHandler = new GitHubHandler();
-        Class.forName("org.postgresql.Driver");
-        String url = "jdbc:postgresql://localhost:5432/";
-        connection = DriverManager.getConnection(url + "postgres","postgres", "admin");
+    public PostgreSQLHandler(String DB) {
+        try {
+            gitHubHandler = new GitHubHandler();
+            Class.forName("org.postgresql.Driver");
+            String url = "jdbc:postgresql://localhost:5432/";
+            connection = DriverManager.getConnection(url + "postgres", "postgres", "admin");
 
-        createDatabase(DB);
-        connection = DriverManager.getConnection(url + DB,"postgres", "admin");
+            createDatabase(DB);
+            connection = DriverManager.getConnection(url + DB, "postgres", "admin");
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
+        }
     }
 
     public void createDatabase(String name) throws SQLException {
