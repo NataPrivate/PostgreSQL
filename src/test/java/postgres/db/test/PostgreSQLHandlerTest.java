@@ -52,7 +52,6 @@ public class PostgreSQLHandlerTest {
         List<RepositoryOwner> owners = handler.selectOwnersOfProjectInCertainLanguageOrNotSpecified("JavaScript");
         assertNotNull(owners);
     }
-
     @Test
     public void selectContributorsToManyRepositories() throws Exception {
         List<User> users = handler.selectContributorsToManyRepositories();
