@@ -1,6 +1,5 @@
 package postgres.db.test;
 
-import jdk.internal.org.objectweb.asm.Handle;
 import org.junit.*;
 
 import static org.junit.Assert.*;
