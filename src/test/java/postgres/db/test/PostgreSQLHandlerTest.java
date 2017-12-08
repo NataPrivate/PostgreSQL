@@ -1,5 +1,6 @@
 package postgres.db.test;
 
+import jdk.internal.org.objectweb.asm.Handle;
 import org.junit.*;
 
 import static org.junit.Assert.*;
@@ -11,25 +12,40 @@ import java.util.List;
 
 
 public class PostgreSQLHandlerTest {
-    private PostgreSQLHandler handler = new PostgreSQLHandler("test");
+    private static PostgreSQLHandler handler = new PostgreSQLHandler("test");
 
-    @Test
-    public void createTables() throws Exception {
+    @BeforeClass
+    public static void setUp() throws Exception{
+        createTables();
+        fillTables();
+    }
+    public static void createTables() throws Exception {
         handler.createTables();
         Class.forName("org.postgresql.Driver");
         String url = "jdbc:postgresql://localhost:5432/";
         Connection connection = DriverManager.getConnection(url + "test","postgres", "admin");
         Statement stmt = connection.createStatement();
         ResultSet result = stmt.executeQuery("SELECT table_name  FROM information_schema.tables " +
-                        "WHERE table_schema='public' AND table_type='BASE TABLE';");
+                "WHERE table_schema='public' AND table_type='BASE TABLE';");
         int effectedRowsCount = 0;
-        while (result.next()) effectedRowsCount++;
+        while (result.next())
+            effectedRowsCount++;
+        connection.close();
         assertEquals(6, effectedRowsCount);
     }
-
-    @Test
-    public void fillTables() throws Exception {
+    public static void fillTables() throws Exception {
         handler.fillTables(5, 5);
+        Class.forName("org.postgresql.Driver");
+        String url = "jdbc:postgresql://localhost:5432/";
+        Connection connection = DriverManager.getConnection(url + "test","postgres", "postgres");
+        Statement stmt = connection.createStatement();
+        ResultSet repoResult = stmt.executeQuery("SELECT count(id) FROM repository;");
+        if (repoResult.next())
+            assertTrue(repoResult.getInt(1) >= 5);
+    }
+    @AfterClass
+    public static void close() {
+        handler.close();
     }
 
     @Test

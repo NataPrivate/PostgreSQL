@@ -14,10 +14,10 @@ public class PostgreSQLHandler {
             gitHubHandler = new GitHubHandler();
             Class.forName("org.postgresql.Driver");
             String url = "jdbc:postgresql://localhost:5432/";
-            connection = DriverManager.getConnection(url + "postgres", "postgres", "admin");
+            connection = DriverManager.getConnection(url + "postgres", "postgres", "postgres");
 
             createDatabase(DB);
-            connection = DriverManager.getConnection(url + DB, "postgres", "admin");
+            connection = DriverManager.getConnection(url + DB, "postgres", "postgres");
         }
         catch (Exception e) {
             e.printStackTrace();
