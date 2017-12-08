@@ -77,8 +77,8 @@ public class PostgreSQLHandler {
         stmt.executeUpdate(query);
     }
 
-    public void fillTables() throws Exception {
-        List<Repository> allRepos = getAllRepos();
+    public void fillTables(int reposCount, int contributorsCount) throws Exception {
+        List<Repository> allRepos = getAllRepos(reposCount, contributorsCount);
         for (Repository repo: allRepos) {
             insertLanguage(repo.getLanguage());
             insertOwner(repo.getOwner());
@@ -91,19 +91,17 @@ public class PostgreSQLHandler {
             }
         }
     }
-    private List<Repository> getAllRepos() throws Exception {
+    private List<Repository> getAllRepos(int reposCount, int contributorsCount) throws Exception {
         List<Repository> allRepos;
         File serialFile = new File("repos.datum");
         if (serialFile.exists() && serialFile.isFile())
             allRepos = deserializeRepos("repos.datum");
         else {
-            int reposCount = 35;
             allRepos = new ArrayList<>(
                     Arrays.asList(gitHubHandler.getMostStarredForLast8Weeks(reposCount)));
             allRepos.addAll(
                     Arrays.asList(gitHubHandler.getMostCommitedForLast8Weeks(reposCount)));
 
-            int contributorsCount = 40;
             allRepos.forEach(repo -> {
                 try {
                     repo.setContributors(gitHubHandler.getContributors(repo, contributorsCount));
@@ -274,14 +272,10 @@ public class PostgreSQLHandler {
     private Repository makeUpRepo(ResultSet result) throws SQLException {
         RepositoryOwner owner = new RepositoryOwner(result.getLong(2),result.getString(3));
         Language language = new Language(result.getString(6));
-        Repository repo = new Repository(result.getLong(1), owner, result.getString(4),
-                result.getString(5), language);
         int starsCount = result.getInt(7);
-        int commitCount = result.getInt(8);
-        if (starsCount != 0)
-            repo.setStarsCount(starsCount);
-        if (commitCount != 0)
-            repo.setCommitsCount(commitCount);
+        int commitsCount = result.getInt(8);
+        Repository repo = new Repository(result.getLong(1), owner, result.getString(4),
+                result.getString(5), language, starsCount, commitsCount);
 
         return repo;
     }

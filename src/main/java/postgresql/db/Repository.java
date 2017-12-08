@@ -2,32 +2,38 @@ package postgresql.db;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.validator.constraints.Range;
 
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.lang.reflect.Field;
 
 
 @Getter
 public class Repository implements Serializable {
+    static final long serialVersionUID = 1L;
+    @Range(min = 1)
     private long id;
-   @Setter
+    @NotNull
     private RepositoryOwner owner;
     private String name;
     private String description;
     private Language language;
-    @Setter
+    @Range(min = 0)
     private int starsCount;
-    @Setter
+    @Range(min = 0)
     private int commitsCount;
     @Setter
     private Contributor[] contributors;
 
-    public Repository(long id, RepositoryOwner owner, String name, String description, Language language) {
+    public Repository(long id, RepositoryOwner owner, String name, String description, Language language, int starsCount, int commitsCount) {
         this.id = id;
         this.owner = owner;
         this.name = name;
         this.description = description;
         this.language = language;
+        this.starsCount = starsCount;
+        this.commitsCount = commitsCount;
     }
 
     @Override
@@ -41,14 +47,11 @@ public class Repository implements Serializable {
                 fieldValue = field.get(this);
                 if (fieldValue != null) {
                     if (fieldValue instanceof String || fieldValue instanceof Integer)
-                        repo.append("\n").append(fieldName)
-                                .append(": ").append(fieldValue);
+                        repo.append("\n").append(fieldName).append(": ").append(fieldValue);
                     else if (fieldValue instanceof Language)
-                        repo.append("\n").append("language: ")
-                                .append((fieldValue).toString());
+                        repo.append("\n").append("language: ").append((fieldValue).toString());
                     else if (fieldValue instanceof RepositoryOwner)
-                        repo.append("\n").append("owner: ")
-                                .append(((RepositoryOwner) fieldValue).getLogin());
+                        repo.append("\n").append("owner: ").append(((RepositoryOwner) fieldValue).getLogin());
                 }
             }
         }

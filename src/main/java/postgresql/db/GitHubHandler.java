@@ -63,9 +63,9 @@ public class GitHubHandler {
         String name = jsonRepo.get("name").getAsString();
         String description = jsonRepo.get("description").isJsonNull() ? "" : jsonRepo.get("description").getAsString();
         Language language = new Language(jsonRepo.get("language").isJsonNull() ? "" : jsonRepo.get("language").getAsString());
-        Repository repo = new Repository(id, owner, name, description, language);
-        repo.setStarsCount(jsonRepo.get("stargazers_count").getAsInt());
-        repo.setCommitsCount(getContributorsCommitsCount(repo));
+        int starsCount = jsonRepo.get("stargazers_count").getAsInt();
+        int commitsCount = getContributorsCommitsCount(owner.getLogin() + "/" + name);
+        Repository repo = new Repository(id, owner, name, description, language, starsCount, commitsCount);
         return repo;
     }
     private RepositoryOwner getRepositoryOwner(JsonObject jsonOwner) {
@@ -111,7 +111,7 @@ public class GitHubHandler {
 
         return allRepos;
     }
-    private int getContributorsCommitsCount(Repository repo) throws IOException {
+    private int getContributorsCommitsCount(String fullName) throws IOException {
         final int[] contributionsCommitsCount = {0};
 
         StringBuilder url;
@@ -119,7 +119,7 @@ public class GitHubHandler {
         JsonArray jsonContributors;
             for (int currentPage = 1; currentPage < maxPageCount; currentPage++) {
                 url = new StringBuilder("https://api.github.com/repos/")
-                        .append(repo.getOwner().getLogin()).append("/").append(repo.getName())
+                        .append(fullName)
                         .append("/contributors")
                         .append("?page=").append(currentPage);
                 jsonResult = getJsonResult(url.toString());

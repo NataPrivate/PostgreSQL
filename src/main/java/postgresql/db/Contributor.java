@@ -1,12 +1,14 @@
 package postgresql.db;
 
 import lombok.Getter;
+import org.hibernate.validator.constraints.Range;
 
 import java.io.Serializable;
 
 
+@Getter
 public class Contributor extends User implements Serializable {
-    @Getter
+    @Range(min = 1)
     private int commitsCount;
 
     public Contributor(long id, String login, int commitsCount) {
@@ -17,8 +19,7 @@ public class Contributor extends User implements Serializable {
 
     @Override
     public String toString() {
-        StringBuilder contributor = new StringBuilder();
-        contributor.append("\n").append(getLogin())
+        StringBuilder contributor = new StringBuilder(login == null ? "Unknown" : login)
                                 .append(" with ")
                                 .append(commitsCount)
                                 .append(" commits");
