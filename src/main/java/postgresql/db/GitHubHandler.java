@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.*;
 import org.apache.http.util.EntityUtils;
@@ -22,7 +23,11 @@ public class GitHubHandler {
         request.setHeader("Authorization", "token " + TOKEN);
         request.setHeader("Accept", "application/vnd.github.nightshade-preview+json");
         CloseableHttpResponse response = client.execute(request);
-        return response.getEntity() == null ? null : EntityUtils.toString(response.getEntity(), "UTF-8");
+        if (response.getEntity() == null)
+            return null;
+
+        String entity = EntityUtils.toString(response.getEntity(), "UTF-8");
+        return entity.contains("message") ? null : entity;
     }
 
     public Repository[] getMostStarredForLast8Weeks(int count) throws IOException {
@@ -79,7 +84,7 @@ public class GitHubHandler {
         allRepos.sort(Comparator.comparing(Repository::getCommitsCount).reversed());
 
         Repository[] repos = new Repository[count];
-        for (int i = 0; i < repos.length; i++)
+        for (int i = 0; i < repos.length && i < allRepos.size(); i++)
             repos[i] = allRepos.get(i);
         return repos;
     }
@@ -137,6 +142,9 @@ public class GitHubHandler {
     }
 
     public Contributor[] getContributors(Repository repo, int count) throws IOException {
+        if (repo == null)
+            return null;
+
         Contributor[] contributors = new Contributor[count];
         int wantedPageCount = count / maxResultsCountPerPage + 1;
         int pageCount = wantedPageCount > maxPageCount ? maxPageCount : wantedPageCount;
