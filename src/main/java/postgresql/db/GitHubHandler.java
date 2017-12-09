@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
-import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.*;
 import org.apache.http.util.EntityUtils;
