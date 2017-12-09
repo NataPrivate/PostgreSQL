@@ -1,6 +1,10 @@
 # Usage of PostgreSQL and PreparedStatement
 ## MTP Lab9
 
+[![Build Status](https://travis-ci.org/NataPrivate/PostgreSQL.svg?branch=master)](https://travis-ci.org/NataPrivate/PostgreSQL)
+[![codecov](https://codecov.io/gh/NataPrivate/PostgreSQL/branch/master/graph/badge.svg)](https://codecov.io/gh/NataPrivate/PostgreSQL)
+[![Codacy Badge](https://api.codacy.com/project/badge/Coverage/03f8cb27825f471db362fc7185bb68d8)](https://www.codacy.com/app/NataPrivate/PostgreSQL?utm_source=github.com&utm_medium=referral&utm_content=NataPrivate/PostgreSQL&utm_campaign=Badge_Coverage)
+
 **List of tables:**
 - User
 - Contributor
