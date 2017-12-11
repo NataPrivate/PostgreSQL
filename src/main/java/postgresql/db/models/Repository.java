@@ -1,4 +1,4 @@
-package postgresql.db;
+package postgresql.db.models;
 
 import lombok.Getter;
 import lombok.Setter;

@@ -4,7 +4,9 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import postgresql.db.*;
+import postgresql.db.models.Language;
+import postgresql.db.models.Repository;
+import postgresql.db.models.RepositoryOwner;
 
 
 public class RepositoryTest {

@@ -9,6 +9,10 @@ import java.util.*;
 import org.apache.http.client.methods.*;
 import org.apache.http.impl.client.*;
 import org.apache.http.util.EntityUtils;
+import postgresql.db.models.Contributor;
+import postgresql.db.models.Language;
+import postgresql.db.models.Repository;
+import postgresql.db.models.RepositoryOwner;
 
 
 public class GitHubHandler {

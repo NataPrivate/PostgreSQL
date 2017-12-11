@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import postgresql.db.Contributor;
+import postgresql.db.models.Contributor;
 
 
 public class ContributorTest {

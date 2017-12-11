@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import postgresql.db.User;
+import postgresql.db.models.User;
 
 
 public class UserTest {

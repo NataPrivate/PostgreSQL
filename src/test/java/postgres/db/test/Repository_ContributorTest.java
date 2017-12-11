@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import postgresql.db.Repository_Contributor;
+import postgresql.db.models.Repository_Contributor;
 
 
 public class Repository_ContributorTest {

@@ -4,7 +4,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.*;
 
-import postgresql.db.Language;
+import postgresql.db.models.Language;
 
 
 public class LanguageTest {

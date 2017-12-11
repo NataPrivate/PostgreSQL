@@ -7,6 +7,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import postgresql.db.*;
+import postgresql.db.models.Repository;
 
 import java.io.IOException;
 import java.util.ArrayList;

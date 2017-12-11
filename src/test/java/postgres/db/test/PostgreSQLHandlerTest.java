@@ -5,6 +5,10 @@ import org.junit.*;
 import static org.junit.Assert.*;
 
 import postgresql.db.*;
+import postgresql.db.models.Language;
+import postgresql.db.models.Repository;
+import postgresql.db.models.RepositoryOwner;
+import postgresql.db.models.User;
 
 import java.sql.*;
 import java.util.List;

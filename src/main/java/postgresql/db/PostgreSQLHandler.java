@@ -1,5 +1,7 @@
 package postgresql.db;
 
+import postgresql.db.models.*;
+
 import java.io.*;
 import java.sql.*;
 import java.util.*;
@@ -148,8 +150,10 @@ public class PostgreSQLHandler {
         preparedStatement.executeUpdate();
     }
     private void insertRepository(Repository repo) throws SQLException {
-        String query = "INSERT INTO repository(id, owner_id, name, description, language, stars_count, commits_count) "
-                                    + "VALUES(?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO NOTHING";
+        String query = "INSERT INTO repository(id, owner_id, name, description, language, stars_count, commits_count) " +
+                            "VALUES(?, ?, ?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET " +
+                                "name = EXECUTED.name, description = EXECUTED.description, language = EXECUTED.language " +
+                                "stars_count = EXECUTED.stars_count, commits_count = EXECUTED.commits_count";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
         preparedStatement.setLong(1, repo.getId());
         preparedStatement.setLong(2, repo.getOwner().getId());
@@ -177,7 +181,7 @@ public class PostgreSQLHandler {
         preparedStatement.executeUpdate();
     }
     private void insertUser(User user) throws SQLException {
-        String query = "INSERT INTO simpleuser VALUES(?, ?) ON CONFLICT(id) DO NOTHING";
+        String query = "INSERT INTO simpleuser VALUES(?, ?) ON CONFLICT(id) DO UPDATE SET login = EXECUTED.login";
         PreparedStatement preparedStatement = connection.prepareStatement(query);
         preparedStatement.setLong(1, user.getId());
         preparedStatement.setString(2, user.getLogin());
